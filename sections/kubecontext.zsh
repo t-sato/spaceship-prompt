@@ -17,6 +17,8 @@ SPACESHIP_KUBECONTEXT_SUFFIX="${SPACESHIP_KUBECONTEXT_SUFFIX="$SPACESHIP_PROMPT_
 SPACESHIP_KUBECONTEXT_SYMBOL="${SPACESHIP_KUBECONTEXT_SYMBOL="☸️  "}"
 SPACESHIP_KUBECONTEXT_COLOR="${SPACESHIP_KUBECONTEXT_COLOR="cyan"}"
 
+SPACESHIP_KUBECONTEXT_NAMESPACE_PREFIX="${SPACESHIP_KUBECONTEXT_NAMESPACE_PREFIX="/"}"
+
 # ------------------------------------------------------------------------------
 # Section
 # ------------------------------------------------------------------------------
@@ -28,12 +30,14 @@ spaceship_kubecontext() {
   spaceship::exists kubectl || return
 
   local kube_context=$(kubectl config current-context 2>/dev/null)
+  local kube_namespace=$(kubectl config view -o "jsonpath={.contexts[?(@.name==\"$kube_context\")].context.namespace}" 2>/dev/null)
+  [[ -n "$kube_namespace" ]] && kube_namespace="${SPACESHIP_KUBECONTEXT_NAMESPACE_PREFIX}${kube_namespace}"
 
   [[ -z $kube_context ]] && return
 
   spaceship::section \
     "$SPACESHIP_KUBECONTEXT_COLOR" \
     "$SPACESHIP_KUBECONTEXT_PREFIX" \
-    "${SPACESHIP_KUBECONTEXT_SYMBOL}${kube_context}" \
+    "${SPACESHIP_KUBECONTEXT_SYMBOL}${kube_context}${kube_namespace}" \
     "$SPACESHIP_KUBECONTEXT_SUFFIX"
 }
